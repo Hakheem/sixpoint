@@ -1,0 +1,324 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "mongodb"
+}
+
+// ======================
+// Enums
+// ======================
+
+enum UserRole {
+  GUEST
+  SUPERADMIN
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  CHECKED_IN
+  CHECKED_OUT
+}
+
+enum NotificationType {
+  BOOKING_CONFIRMED
+  CHECKIN_REMINDER
+  CHECKOUT_REMINDER
+  SYSTEM_ALERT
+  NEW_REVIEW
+}
+
+enum PaymentMethod {
+  NONE
+  MPESA
+  PAYSTACK
+}
+
+enum RoomOrientation {
+  PORTRAIT
+  LANDSCAPE
+}
+
+// ======================
+// User (Guest & SuperAdmin)
+// ======================
+
+model User {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  name          String?
+  email         String   @unique
+  passwordHash  String?    // Optional for social login
+  phone         String?
+  image         String?    // Profile picture
+  role          UserRole   @default(GUEST)  // GUEST or SUPERADMIN
+
+  accounts      Account[]
+  sessions      Session[]
+  bookings      Booking[]
+  reviews       Review[]
+  notifications Notification[]
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+// ======================
+// Admin
+// ======================
+
+model Admin {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  name         String
+  email        String   @unique
+  passwordHash String
+  phone        String?
+  approved     Boolean  @default(false) // SUPERADMIN must approve first
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+// ======================
+// Room Types & Rooms
+// ======================
+
+model RoomType {
+  id          String @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  description String?
+  rooms       Room[]
+}
+
+model Room {
+  id                String   @id @default(auto()) @map("_id") @db.ObjectId
+  title             String
+  description       String?
+  roomNumber        String?
+  capacity          Int
+  pricePerNight     Float
+  orientation       RoomOrientation @default(LANDSCAPE)
+
+  allowPrepaid      Boolean @default(true)
+  allowPayOnArrival Boolean @default(true)
+
+  typeId            String? @db.ObjectId
+  type              RoomType? @relation(fields: [typeId], references: [id])
+
+  amenities         RoomAmenity[]
+  extraServices     RoomExtraService[]
+  images            RoomImage[]
+  bookings          BookingRoom[]
+  reviews           Review[]
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+// ======================
+// Room Images
+// ======================
+
+model RoomImage {
+  id          String          @id @default(auto()) @map("_id") @db.ObjectId
+  url         String
+  alt         String?
+  roomId      String          @db.ObjectId
+  orientation RoomOrientation @default(PORTRAIT)
+
+  room        Room @relation(fields: [roomId], references: [id])
+}
+
+// ======================
+// Amenities
+// ======================
+
+model Amenity {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  description String?
+  iconName    String?
+  rooms       RoomAmenity[]
+}
+
+model RoomAmenity {
+  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  roomId    String  @db.ObjectId
+  amenityId String  @db.ObjectId
+
+  room      Room    @relation(fields: [roomId], references: [id])
+  amenity   Amenity @relation(fields: [amenityId], references: [id])
+}
+
+// ======================
+// Extra Services
+// ======================
+
+model ExtraService {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  description String?
+  imageUrl    String?
+  price       Float    @default(0)
+  rooms       RoomExtraService[]
+  createdAt   DateTime @default(now())
+}
+
+model RoomExtraService {
+  id            String       @id @default(auto()) @map("_id") @db.ObjectId
+  roomId        String       @db.ObjectId
+  extraServiceId String      @db.ObjectId
+
+  room          Room         @relation(fields: [roomId], references: [id])
+  extraService  ExtraService @relation(fields: [extraServiceId], references: [id])
+}
+
+// ======================
+// Bookings & Reviews
+// ======================
+
+model Booking {
+  id                String        @id @default(auto()) @map("_id") @db.ObjectId
+  userId            String        @db.ObjectId
+  status            BookingStatus @default(PENDING)
+  checkIn           DateTime
+  checkOut          DateTime
+  totalAmount       Float         @default(0)
+  paymentMethod     PaymentMethod @default(NONE)
+  paymentReference  String?
+
+  emailReminderSent    Boolean @default(false)
+  checkoutReminderSent Boolean @default(false)
+
+  user              User           @relation(fields: [userId], references: [id])
+  rooms             BookingRoom[]
+  review            Review?
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model BookingRoom {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  bookingId String   @db.ObjectId
+  roomId    String   @db.ObjectId
+
+  booking   Booking  @relation(fields: [bookingId], references: [id])
+  room      Room     @relation(fields: [roomId], references: [id])
+}
+
+model Review {
+  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  rating    Int
+  comment   String?
+  hidden    Boolean @default(false)
+
+  userId    String  @db.ObjectId
+  roomId    String  @db.ObjectId
+  bookingId String  @unique @db.ObjectId
+
+  user      User    @relation(fields: [userId], references: [id])
+  room      Room    @relation(fields: [roomId], references: [id])
+  booking   Booking @relation(fields: [bookingId], references: [id])
+
+  createdAt DateTime @default(now())
+}
+
+// ======================
+// Notifications
+// ======================
+
+model Notification {
+  id        String           @id @default(auto()) @map("_id") @db.ObjectId
+  title     String
+  message   String
+  type      NotificationType
+  isRead    Boolean          @default(false)
+
+  userId    String?          @db.ObjectId
+  user      User?            @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+}
+
+// ======================
+// Site Configuration
+// ======================
+
+model SiteConfig {
+  id                  String   @id @default(auto()) @map("_id") @db.ObjectId
+  logoUrl             String?
+  heroImageUrl        String?
+  heroMainHeading     String?
+  heroHighlightedText String?
+  heroDescription     String?
+
+  phone1   String?
+  phone2   String?
+  location String?
+
+  facebook   String?
+  instagram  String?
+  tiktok     String?
+  youtube    String?
+  twitter    String?
+
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+// ======================
+// Visit Places
+// ======================
+
+model VisitPlace {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  description String?
+  imageUrl    String
+  createdAt   DateTime @default(now())
+}
+
+// ======================
+// Better Auth Models
+// ======================
+
+model Account {
+  id                String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId            String   @db.ObjectId
+  provider          String
+  providerAccountId String
+  accessToken       String?
+  refreshToken      String?
+  expiresAt         Int?
+  tokenType         String?
+  scope             String?
+  idToken           String?
+  sessionState      String?
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([provider, providerAccountId], name: "provider_providerAccountId_idx")
+}
+
+model Session {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  sessionToken String   @unique
+  userId       String   @db.ObjectId
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model VerificationToken {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@index([identifier, token], name: "identifier_token_idx")
+}
+
