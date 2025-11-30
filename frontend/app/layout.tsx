@@ -33,7 +33,7 @@ export default function RootLayout({
         className={`${workSans.variable} ${cormorantGaramond.variable} antialiased`}
       >
         {children}
-        <Footer />
+        {/* <Footer /> */}
       </body>
     </html>
   );

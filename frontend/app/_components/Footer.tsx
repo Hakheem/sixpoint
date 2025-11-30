@@ -40,11 +40,10 @@ const Footer = () => {
   ];
 
   return (
-    <footer className="bg-[#B8860B] relative">
-      {/* Elevated First Section */}
-      <div className="relative -mb-32">
-        <div className="padded">
-          <div className="bg-[#3A3A3A] rounded-t-3xl pt-16 pb-48">
+    <footer className="bg-[#2A2A2A] text-gray-300">
+      {/* Main Footer Content */}
+      <div className="padded py-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
           {/* Contact Info Section */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -54,39 +53,39 @@ const Footer = () => {
             className="space-y-8"
           >
             <div>
-              <h3 className="title text-3xl text-gray-500 mb-2">SIXPOINT</h3>
-              <h2 className="title text-4xl text-gray-400 mb-8">VICTORIA</h2>
+              <h3 className="title text-3xl text-gray-400 mb-2">SIXPOINT</h3>
+              <h2 className="title text-4xl text-gray-300 mb-8">VICTORIA</h2>
             </div>
 
             <div>
               <h4 className="text-lg font-semibold text-white mb-6 tracking-wide">
                 CONTACT INFO
               </h4>
-              <div className="h-1 w-12 bg-[#2A2A2A] mb-6"></div>
+              <div className="h-1 w-12 bg-[#FFD700] mb-6"></div>
 
               <div className="space-y-4">
                 <div className="flex items-start gap-3">
-                  <Phone className="w-5 h-5 text-[#2A2A2A] mt-1 shrink-0" />
+                  <Phone className="w-5 h-5 text-[#FFD700] mt-1 flex-shrink-0" />
                   <a
                     href="tel:+254769403162"
-                    className="hover:text-white transition-colors"
+                    className="hover:text-[#FFD700] transition-colors"
                   >
                     +254 769 403162
                   </a>
                 </div>
 
                 <div className="flex items-start gap-3">
-                  <Mail className="w-5 h-5 text-[#2A2A2A] mt-1 shrink-0" />
+                  <Mail className="w-5 h-5 text-[#FFD700] mt-1 flex-shrink-0" />
                   <a
                     href="mailto:hakheem67@gmail.com"
-                    className="hover:text-white transition-colors"
+                    className="hover:text-[#FFD700] transition-colors"
                   >
                     hakheem67@gmail.com
                   </a>
                 </div>
 
                 <div className="flex items-start gap-3">
-                  <MapPin className="w-5 h-5 text-[#2A2A2A] mt-1 shrink-0" />
+                  <MapPin className="w-5 h-5 text-[#FFD700] mt-1 flex-shrink-0" />
                   <span>123 Street, East Africa</span>
                 </div>
               </div>
@@ -98,7 +97,7 @@ const Footer = () => {
                     key={index}
                     href={social.href}
                     aria-label={social.label}
-                    className="w-10 h-10 rounded-full border border-gray-600 flex items-center justify-center hover:border-[#2A2A2A] hover:text-[#2A2A2A] transition-colors"
+                    className="w-10 h-10 rounded-full border border-gray-600 flex items-center justify-center hover:border-[#FFD700] hover:text-[#FFD700] transition-colors"
                   >
                     <social.icon className="w-4 h-4" />
                   </a>
@@ -117,14 +116,14 @@ const Footer = () => {
             <h4 className="text-lg font-semibold text-white mb-6 tracking-wide">
               USEFUL LINKS
             </h4>
-            <div className="h-1 w-12 bg-[#2A2A2A] mb-6"></div>
+            <div className="h-1 w-12 bg-[#FFD700] mb-6"></div>
 
             <ul className="space-y-3">
               {usefulLinks.map((link, index) => (
                 <li key={index}>
                   <Link
                     href={link.href}
-                    className="hover:text-white transition-colors hover:pl-2 inline-block"
+                    className="hover:text-[#FFD700] transition-colors hover:pl-2 inline-block"
                   >
                     {link.name}
                   </Link>
@@ -143,7 +142,7 @@ const Footer = () => {
             <h4 className="text-lg font-semibold text-white mb-6 tracking-wide">
               GALLERY
             </h4>
-            <div className="h-1 w-12 bg-[#2A2A2A] mb-6"></div>
+            <div className="h-1 w-12 bg-[#FFD700] mb-6"></div>
 
             <div className="grid grid-cols-3 gap-2">
               {galleryImages.map((img, index) => (
@@ -151,7 +150,7 @@ const Footer = () => {
                   key={index}
                   className="aspect-square bg-gray-700 rounded overflow-hidden group cursor-pointer"
                 >
-                  <div className="w-full h-full bg-linear-to-br from-gray-600 to-gray-800 group-hover:scale-110 transition-transform duration-300" />
+                  <div className="w-full h-full bg-gradient-to-br from-gray-600 to-gray-800 group-hover:scale-110 transition-transform duration-300" />
                 </div>
               ))}
             </div>
@@ -167,7 +166,7 @@ const Footer = () => {
             <h4 className="text-lg font-semibold text-white mb-6 tracking-wide">
               NEWSLETTER
             </h4>
-            <div className="h-1 w-12 bg-[#2A2A2A] mb-6"></div>
+            <div className="h-1 w-12 bg-[#FFD700] mb-6"></div>
 
             <p className="text-gray-400 mb-6">Subscribe to our newsletter.</p>
 
@@ -177,22 +176,21 @@ const Footer = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Enter your email"
-                className="w-full px-4 py-3 bg-[#1A1A1A] border border-gray-700 rounded text-gray-300 placeholder-gray-500 focus:outline-none focus:border-[#2A2A2A] transition-colors"
+                className="w-full px-4 py-3 bg-[#1A1A1A] border border-gray-700 rounded text-gray-300 placeholder-gray-500 focus:outline-none focus:border-[#FFD700] transition-colors"
               />
               <button
                 onClick={handleSubscribe}
-                className="w-full bg-[#2A2A2A] text-white py-3 rounded font-semibold hover:bg-[#1A1A1A] transition-colors"
+                className="w-full bg-[#FFD700] text-[#2A2A2A] py-3 rounded font-semibold hover:bg-[#C8A903] transition-colors"
               >
                 SUBSCRIBE NOW
               </button>
             </div>
           </motion.div>
         </div>
-          </div>
-        </div>
+      </div>
 
-      {/* Bottom Bar with darker background */}
-      <div className="bg-[#1A1A1A] relative z-10">
+      {/* Bottom Bar */}
+      <div className="border-t border-gray-800">
         <div className="padded py-6">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-gray-500">
             <p>© 2025, Sixpoint Victoria. All Rights Reserved.</p>
@@ -200,7 +198,7 @@ const Footer = () => {
               Designed, developed and maintained by{' '}
               <a
                 href="#"
-                className="text-[#B8860B] hover:text-[#FFD700] transition-colors"
+                className="text-[#FFD700] hover:text-[#C8A903] transition-colors"
               >
                 Hakheem
               </a>
@@ -213,3 +211,4 @@ const Footer = () => {
 };
 
 export default Footer;
+
