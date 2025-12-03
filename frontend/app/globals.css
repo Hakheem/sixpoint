@@ -4,6 +4,7 @@
 @theme inline {
   --font-sans: var(--font-work-sans);
   --font-title: var(--font-cormorant-garamond);
+  --font-wittgenstein: 'Wittgenstein', serif;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -38,50 +39,37 @@
 }
 
 :root {
-  --background: oklch(1 0 0); /* White */
-  --foreground: oklch(0.129 0.042 264.695); /* Dark gray text */
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.129 0.042 264.695);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.129 0.042 264.695);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.129 0.042 264.695);
-  
-  /* Primary - Gold buttons on white backgrounds */
-  --primary: #FFD700; /* Your bright gold */
-  --primary-foreground: oklch(0.129 0.042 264.695); /* Dark text on gold buttons */
-  
-  /* Secondary - For dark backgrounds */
-  --secondary: oklch(0.373 0.034 259.733); /* Dark gray for footer/sections */
-  --secondary-foreground: #FFD700; /* Gold text on dark backgrounds */
-  
-  /* Muted - For footer and dark sections */
-  --muted: oklch(0.2 0.02 260); /* Dark gray */
-  --muted-foreground: oklch(0.9 0.01 260); /* Light text on dark */
-  
-  /* Accent - Darker gold for subtle elements */
-  --accent: #C8A903; /* Your darker gold */
-  --accent-foreground: oklch(1 0 0); /* White text on dark gold */
-  
+  --primary: #FFD700;
+  --primary-foreground: oklch(0.129 0.042 264.695);
+  --secondary: oklch(0.373 0.034 259.733);
+  --secondary-foreground: #FFD700;
+  --muted: oklch(0.2 0.02 260);
+  --muted-foreground: oklch(0.9 0.01 260);
+  --accent: #C8A903;
+  --accent-foreground: oklch(1 0 0);
   --destructive: oklch(0.577 0.245 27.325);
   --border: oklch(0.929 0.013 255.508);
   --input: oklch(0.929 0.013 255.508);
-  --ring: #FFD700; /* Gold focus rings */
-  
-  /* Sidebar colors */
-  --sidebar: oklch(0.98 0.01 260); /* Light sidebar background */
-  --sidebar-foreground: oklch(0.129 0.042 264.695); /* Dark sidebar text */
-  --sidebar-primary: #FFD700; /* Gold for sidebar primary */
-  --sidebar-primary-foreground: oklch(0.129 0.042 264.695); /* Dark text on gold */
-  --sidebar-accent: oklch(0.95 0.01 260); /* Light accent for sidebar */
-  --sidebar-accent-foreground: oklch(0.129 0.042 264.695); /* Dark text on sidebar accent */
-  --sidebar-border: oklch(0.9 0.01 260); /* Light border for sidebar */
-  --sidebar-ring: #FFD700; /* Gold focus ring for sidebar */
-  
-  /* Chart colors */
-  --chart-1: #FFD700; /* Gold for chart 1 */
-  --chart-2: #C8A903; /* Darker gold for chart 2 */
-  --chart-3: oklch(0.6 0.1 200); /* Blue for chart 3 */
-  --chart-4: oklch(0.7 0.08 300); /* Purple for chart 4 */
-  --chart-5: oklch(0.8 0.06 150); /* Green for chart 5 */
+  --ring: #FFD700;
+  --sidebar: oklch(0.98 0.01 260);
+  --sidebar-foreground: oklch(0.129 0.042 264.695);
+  --sidebar-primary: #FFD700;
+  --sidebar-primary-foreground: oklch(0.129 0.042 264.695);
+  --sidebar-accent: oklch(0.95 0.01 260);
+  --sidebar-accent-foreground: oklch(0.129 0.042 264.695);
+  --sidebar-border: oklch(0.9 0.01 260);
+  --sidebar-ring: #FFD700;
+  --chart-1: #FFD700;
+  --chart-2: #C8A903;
+  --chart-3: oklch(0.6 0.1 200);
+  --chart-4: oklch(0.7 0.08 300);
+  --chart-5: oklch(0.8 0.06 150);
 }
 
 @layer base {
@@ -96,8 +84,24 @@
     font-family: var(--font-cormorant-garamond), serif;
   }
 
+  .logo-text {
+    font-family: var(--font-wittgenstein), serif;
+  }
+
   .padded {
     padding-left: 7%;
     padding-right: 7%;
   }
+}
+
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
 }

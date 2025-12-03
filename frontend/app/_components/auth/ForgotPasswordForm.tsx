@@ -10,11 +10,13 @@ import { Label } from '@/components/ui/label';
 interface ForgotPasswordFormProps {
   onSwitchToLogin: () => void;
   onSubmit?: (email: string) => void;
+  isLoading?: boolean;
 }
 
 const ForgotPasswordForm: React.FC<ForgotPasswordFormProps> = ({ 
   onSwitchToLogin,
-  onSubmit
+  onSubmit,
+  isLoading = false
 }) => {
   const [email, setEmail] = useState('');
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -61,6 +63,7 @@ const ForgotPasswordForm: React.FC<ForgotPasswordFormProps> = ({
           onClick={onSwitchToLogin}
           variant="link"
           className="text-amber-600 hover:text-amber-700 flex items-center gap-2 mx-auto"
+          disabled={isLoading}
         >
           <ArrowLeft className="w-4 h-4" />
           Back to login
@@ -98,15 +101,17 @@ const ForgotPasswordForm: React.FC<ForgotPasswordFormProps> = ({
               placeholder="email@example.com"
               className="pl-10 h-11 rounded-none"
               required
+              disabled={isLoading}
             />
           </div>
         </div>
 
         <Button
           onClick={handleSubmit}
-          className="w-full h-11 hover:bg-[#FFD700]/80 "
+          disabled={isLoading}
+          className="w-full h-11 hover:bg-[#FFD700]/80"
         >
-          Send Reset Link
+          {isLoading ? 'Sending...' : 'Send Reset Link'}
         </Button>
 
         <Button
@@ -114,6 +119,7 @@ const ForgotPasswordForm: React.FC<ForgotPasswordFormProps> = ({
           type="button"
           variant="link"
           className="w-full text-gray-600 hover:text-gray-700 flex items-center justify-center gap-2"
+          disabled={isLoading}
         >
           <ArrowLeft className="w-4 h-4" />
           Back to login

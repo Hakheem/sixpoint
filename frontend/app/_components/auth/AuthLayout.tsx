@@ -23,7 +23,7 @@ export default function AuthLayout({ children, title, subtitle }: AuthLayoutProp
           }}
         />
         
-        <div className="absolute inset-0 bg-gradient-to-tr from-black/100 via-black/50 to-transparent" />
+        <div className="absolute inset-0 bg-linear-to-tr from-black via-black/50 to-transparent" />
         
         {/* Content Overlay */}
         <div className="relative z-10 flex flex-col justify-end p-12 text-white">
@@ -53,7 +53,7 @@ export default function AuthLayout({ children, title, subtitle }: AuthLayoutProp
       </div>
 
       {/* Right Side - Auth Forms */}
-      <div className="flex-1 lg:w-1/2 bg-gradient-to-br from-[#f5f7fa] via-[#c3cfe2] to-transparent relative overflow-hidden">
+      <div className="flex-1 lg:w-1/2 bg-linear-to-br from-[#f5f7fa] via-[#c3cfe2] to-transparent relative overflow-hidden">
         {/* Subtle background pattern */}
         <div className="absolute inset-0 opacity-[0.03]">
           <div className="absolute -top-1/4 -left-1/4 w-1/2 h-1/2 bg-amber-400 rounded-full blur-3xl" />

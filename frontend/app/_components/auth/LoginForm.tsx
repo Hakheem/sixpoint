@@ -13,13 +13,15 @@ interface LoginFormProps {
   onSwitchToForgotPassword: () => void;
   onLogin?: (formData: any) => void;
   onGoogleAuth?: () => void;
+  isLoading?: boolean;
 }
 
 const LoginForm: React.FC<LoginFormProps> = ({ 
   onSwitchToRegister, 
   onSwitchToForgotPassword,
   onLogin,
-  onGoogleAuth
+  onGoogleAuth,
+  isLoading = false
 }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
@@ -63,7 +65,8 @@ const LoginForm: React.FC<LoginFormProps> = ({
         type="button"
         variant="outline"
         onClick={handleGoogleSignIn}
-        className="w-full h-11 text-[#333] hover:text-[#333] "
+        disabled={isLoading}
+        className="w-full h-11 text-[#333] hover:text-[#333]"
       >
         <svg className="w-4 h-4 mr-2" viewBox="0 0 24 24">
           <path
@@ -83,7 +86,7 @@ const LoginForm: React.FC<LoginFormProps> = ({
             d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
           />
         </svg>
-        Sign in with Google
+        {isLoading ? 'Signing in...' : 'Sign in with Google'}
       </Button>
 
       <div className="relative">
@@ -107,8 +110,9 @@ const LoginForm: React.FC<LoginFormProps> = ({
               value={formData.email}
               onChange={handleInputChange}
               placeholder="admin@sixpoint.com"
-              className="pl-10 h-11 rounded-none "
+              className="pl-10 h-11 rounded-none"
               required
+              disabled={isLoading}
             />
           </div>
         </div>
@@ -126,11 +130,13 @@ const LoginForm: React.FC<LoginFormProps> = ({
               placeholder="Enter your password"
               className="pl-10 pr-10 h-11 rounded-none"
               required
+              disabled={isLoading}
             />
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
               className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+              disabled={isLoading}
             >
               {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
             </button>
@@ -144,6 +150,7 @@ const LoginForm: React.FC<LoginFormProps> = ({
               name="rememberMe"
               checked={formData.rememberMe}
               onCheckedChange={(checked) => setFormData({ ...formData, rememberMe: checked as boolean })}
+              disabled={isLoading}
             />
             <Label htmlFor="rememberMe" className="text-gray-700 cursor-pointer">
               Remember me
@@ -154,6 +161,7 @@ const LoginForm: React.FC<LoginFormProps> = ({
             variant="link"
             onClick={onSwitchToForgotPassword}
             className="text-amber-600 hover:text-amber-700 p-0 h-auto font-normal"
+            disabled={isLoading}
           >
             Forgot password?
           </Button>
@@ -161,9 +169,10 @@ const LoginForm: React.FC<LoginFormProps> = ({
 
         <Button
           onClick={handleSubmit}
-          className="w-full h-11 hover:bg-[#FFD700]/80 "
+          disabled={isLoading}
+          className="w-full h-11 hover:bg-[#FFD700]/80"
         >
-          Sign In
+          {isLoading ? 'Signing in...' : 'Sign In'}
         </Button>
 
         <div className="text-center text-sm text-gray-600">
@@ -173,6 +182,7 @@ const LoginForm: React.FC<LoginFormProps> = ({
             variant="link"
             onClick={onSwitchToRegister}
             className="text-amber-600 hover:text-amber-700 p-0 h-auto font-normal"
+            disabled={isLoading}
           >
             Sign up
           </Button>

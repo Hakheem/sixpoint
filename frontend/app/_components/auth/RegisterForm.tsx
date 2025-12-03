@@ -12,12 +12,14 @@ interface RegisterFormProps {
   onSwitchToLogin: () => void;
   onRegister?: (formData: any) => void;
   onGoogleAuth?: () => void;
+  isLoading?: boolean;
 }
 
 const RegisterForm: React.FC<RegisterFormProps> = ({ 
   onSwitchToLogin,
   onRegister,
-  onGoogleAuth
+  onGoogleAuth,
+  isLoading = false
 }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
@@ -72,7 +74,8 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
         type="button"
         variant="outline"
         onClick={handleGoogleSignUp}
-        className="w-full h-11 text-[#333] hover:text-[#333] "
+        disabled={isLoading}
+        className="w-full h-11 text-[#333] hover:text-[#333]"
       >
         <svg className="w-4 h-4 mr-2" viewBox="0 0 24 24">
           <path
@@ -92,7 +95,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
             d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
           />
         </svg>
-        Sign up with Google
+        {isLoading ? 'Signing up...' : 'Sign up with Google'}
       </Button>
 
       <div className="relative">
@@ -118,6 +121,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
               placeholder="Your Name"
               className="pl-10 rounded-none"
               required
+              disabled={isLoading}
             />
           </div>
         </div>
@@ -135,6 +139,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
               placeholder="email@example.com"
               className="pl-10 rounded-none"
               required
+              disabled={isLoading}
             />
           </div>
         </div>
@@ -152,11 +157,13 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
               placeholder="Create a password"
               className="pl-10 pr-10 rounded-none"
               required
+              disabled={isLoading}
             />
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
               className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+              disabled={isLoading}
             >
               {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
             </button>
@@ -176,6 +183,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
               placeholder="Confirm your password"
               className="pl-10 rounded-none"
               required
+              disabled={isLoading}
             />
           </div>
         </div>
@@ -188,14 +196,15 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
               name="acceptTerms"
               checked={formData.acceptTerms}
               onCheckedChange={(checked) => setFormData({ ...formData, acceptTerms: checked as boolean })}
+              disabled={isLoading}
             />
             <Label htmlFor="acceptTerms" className="text-sm text-gray-700 cursor-pointer">
               I agree to the{' '}
-              <Button type="button" variant="link" className="text-amber-600 hover:text-amber-700 p-0 h-auto text-sm font-normal">
+              <Button type="button" variant="link" className="text-amber-600 hover:text-amber-700 p-0 h-auto text-sm font-normal" disabled={isLoading}>
                 Terms and Conditions
               </Button>{' '}
               and{' '}
-              <Button type="button" variant="link" className="text-amber-600 hover:text-amber-700 p-0 h-auto text-sm font-normal">
+              <Button type="button" variant="link" className="text-amber-600 hover:text-amber-700 p-0 h-auto text-sm font-normal" disabled={isLoading}>
                 Privacy Policy
               </Button>
             </Label>
@@ -204,9 +213,10 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
 
         <Button
           onClick={handleSubmit}
-          className="w-full h-11 hover:bg-[#FFD700]/80 "
+          disabled={isLoading}
+          className="w-full h-11 hover:bg-[#FFD700]/80"
         >
-          Create Account
+          {isLoading ? 'Creating Account...' : 'Create Account'}
         </Button>
 
         <div className="text-center text-sm text-gray-600">
@@ -216,6 +226,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
             variant="link"
             onClick={onSwitchToLogin}
             className="text-amber-600 hover:text-amber-700 p-0 h-auto font-normal"
+            disabled={isLoading}
           >
             Sign in
           </Button>
@@ -226,3 +237,4 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
 };
 
 export default RegisterForm;
+

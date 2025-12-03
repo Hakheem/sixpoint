@@ -6,11 +6,20 @@ import LoginForm from '@/app/_components/auth/LoginForm';
 import RegisterForm from '@/app/_components/auth/RegisterForm';
 import ForgotPasswordForm from '@/app/_components/auth/ForgotPasswordForm';
 import AuthLayout from '@/app/_components/auth/AuthLayout';
+import {
+  signUp,
+  signIn,
+  requestPasswordReset
+} from '@/lib/auth-client';
+import { useRouter } from 'next/navigation';
+import { toast } from "sonner";
 
 type AuthView = 'login' | 'register' | 'forgot-password';
 
 export default function AdminLoginPage() {
   const [view, setView] = useState<AuthView>('login');
+  const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
 
   const getTitle = () => {
     switch (view) {
@@ -38,28 +47,106 @@ export default function AdminLoginPage() {
     }
   };
 
-  // Better Auth handlers for ADMIN
   const handleAdminLogin = async (formData: any) => {
-    console.log('Admin login:', formData);
-    // Better Auth ADMIN login logic here
-    // await signIn.email({ email: formData.email, password: formData.password, callbackURL: '/admin/dashboard' })
+    setIsLoading(true);
+    try {
+      const result = await signIn.email({
+        email: formData.email,
+        password: formData.password,
+        rememberMe: formData.rememberMe,
+      });
+
+      if (result.error) {
+        toast.error("Admin Login Failed", {
+          description: result.error.message || "Invalid admin credentials",
+        });
+      } else {
+        toast.success("Welcome, Administrator", {
+          description: "Successfully logged into admin portal.",
+        });
+        router.push('/admin/dashboard');
+        router.refresh();
+      }
+    } catch (error: any) {
+      toast.error("Error", {
+        description: error.message || "Something went wrong. Please try again.",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleAdminRegister = async (formData: any) => {
-    console.log('Admin register:', formData);
-    // Better Auth ADMIN registration logic here
-    // You might want to add admin verification/approval logic
+    setIsLoading(true);
+    try {
+      // Optional: Add admin verification check here
+      // You might want to verify admin registration codes or invite tokens
+
+      const result = await signUp.email({
+        email: formData.email,
+        name: formData.name,
+        password: formData.password,
+      });
+
+      if (result.error) {
+        toast.error("Registration Failed", {
+          description: result.error.message || "Could not create admin account",
+        });
+      } else {
+        toast.success("Admin Account Created", {
+          description: "Welcome to the admin portal.",
+        });
+        router.push('/admin/dashboard');
+        router.refresh();
+      }
+    } catch (error: any) {
+      toast.error("Error", {
+        description: error.message || "Something went wrong. Please try again.",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleAdminForgotPassword = async (email: string) => {
-    console.log('Admin forgot password:', email);
-    // Better Auth ADMIN password reset logic here
+    setIsLoading(true);
+    try {
+      const result = await requestPasswordReset({
+        email,
+        redirectTo: `${window.location.origin}/admin-reset-password`,
+      });
+
+      if (result.error) {
+        toast.error("Error", {
+          description: result.error.message || "Could not send reset email",
+        });
+      } else {
+        toast.success("Email Sent", {
+          description: "Check your inbox for admin password reset instructions.",
+        });
+      }
+    } catch (error: any) {
+      toast.error("Error", {
+        description: error.message || "Something went wrong. Please try again.",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleAdminGoogleAuth = async () => {
-    console.log('Admin Google auth');
-    // Better Auth ADMIN Google sign-in logic here
-    // await signIn.social({ provider: 'google', callbackURL: '/admin/dashboard' })
+    setIsLoading(true);
+    try {
+      await signIn.social({
+        provider: 'google',
+        callbackURL: '/admin/dashboard',
+      });
+    } catch (error: any) {
+      toast.error("Error", {
+        description: error.message || "Could not sign in with Google",
+      });
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -72,6 +159,7 @@ export default function AdminLoginPage() {
             onSwitchToForgotPassword={() => setView('forgot-password')}
             onLogin={handleAdminLogin}
             onGoogleAuth={handleAdminGoogleAuth}
+            isLoading={isLoading}
           />
         )}
         {view === 'register' && (
@@ -80,6 +168,7 @@ export default function AdminLoginPage() {
             onSwitchToLogin={() => setView('login')}
             onRegister={handleAdminRegister}
             onGoogleAuth={handleAdminGoogleAuth}
+            isLoading={isLoading}
           />
         )}
         {view === 'forgot-password' && (
@@ -87,9 +176,11 @@ export default function AdminLoginPage() {
             key="forgot-password"
             onSwitchToLogin={() => setView('login')}
             onSubmit={handleAdminForgotPassword}
+            isLoading={isLoading}
           />
         )}
       </AnimatePresence>
     </AuthLayout>
   );
 }
+
