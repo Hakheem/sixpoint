@@ -2,7 +2,10 @@ import React from 'react'
 
 const RoomsMainPage = () => {
   return (
-    <div>RoomsMainPage</div>
+    <div>
+      RoomsMainPage
+      
+      </div>
   )
 }
 

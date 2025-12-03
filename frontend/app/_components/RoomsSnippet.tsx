@@ -90,10 +90,10 @@ const RoomCard: React.FC<{ room: RoomData }> = ({ room }) => {
       </div>
 
       <div className="p-4 md:p-6 mb-3 flex flex-col grow">
-        <p className="text-yellow-400 font-semibold text-xs tracking-wider mb-2">
+        <p className="text-accent font-semibold text-xs tracking-wider mb-2">
           {room.roomType}
         </p>
-        <h3 className="text-2xl md:text-3xl font-serif mb-4">{room.title}</h3>
+        <h3 className="text-2xl md:text-3xl title mb-4">{room.title}</h3>
 
         <div className="flex items-center gap-6 mb-6 text-gray-600 text-sm">
           <div className="flex items-center gap-2">
@@ -114,7 +114,7 @@ const RoomCard: React.FC<{ room: RoomData }> = ({ room }) => {
           {room.description}
         </p>
 
-        <button className="cursor-pointer inline-flex text-yellow-400 items-center font-medium hover:text-primary transition-colors group">
+        <button className="cursor-pointer inline-flex text-accent items-center font-medium transition-colors group">
           Discover More
           <ChevronRight
             size={20}
@@ -209,7 +209,7 @@ const RoomsSnippet: React.FC = () => {
           </motion.div>
 
           {/* Dots Navigation */}
-          <div className="flex justify-center gap-2 mt-16">
+          <div className="flex justify-center gap-2 mt-12">
             {roomsData.map((_, index) => (
               <button
                 key={index}

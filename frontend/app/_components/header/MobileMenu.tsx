@@ -164,7 +164,7 @@ const MobileMenu = ({ isScrolled }: MobileMenuProps) => {
             {/* Footer with Book Button */}
             <div className="p-6 border-t border-gray-100">
               <Button className="w-full font-semibold shadow-md h-12 text-base">
-                Book Your Stay
+                Find My Room
               </Button>
             </div>
           </div>

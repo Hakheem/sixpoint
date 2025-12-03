@@ -66,15 +66,15 @@ const Services = () => {
             {cardsData.map((card, index) => (
               <motion.div
                 key={card.id}
-                initial={{ opacity: 0, y: 60 }}
+                initial={{ opacity: 0, y: 50 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, amount: 0.2 }}
                 transition={{
-                  duration: 0.9,
+                  duration: 0.8,
                   delay: index * 0.15,
                   ease: [0.22, 0.1, 0.36, 1]
                 }}
-                className={`lg:col-span-4 bg-white  overflow-hidden group ${index === 1 ? 'lg:mt-20' : ''
+                className={`lg:col-span-4 bg-white  overflow-hidden group ${index === 1 ? 'lg:mt-18' : ''
                   }`}
               >
                 <div className="relative h-[500px] border-6 border-white overflow-hidden">

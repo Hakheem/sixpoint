@@ -213,7 +213,7 @@ const SearchFilter: React.FC<SearchFilterProps> = ({
 
         {/* Book Button */}
         <Button className="w-full rounded-md h-9 text-[#555] text-lg font-semibold">
-          Find Rooms
+          Find My Room
         </Button>
       </div>
     </div>

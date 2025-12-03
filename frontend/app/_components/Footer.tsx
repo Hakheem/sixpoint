@@ -50,13 +50,13 @@ const Footer = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 pb-8 gap-12 relative">
             {/* Contact Info Section - Absolute position */}
             <div
-              className="bg-[#1f1f1f] p-8 absolute md:left-4 md:-top-28.5
+              className="bg-[#1f1f1f] p-8 absolute md:left-4 md:-top-26.5
                          left-0 top-0 w-full 
                          md:w-fit-content lg:w-[calc(25%)]"
             >
-              <div className='mb-6'>
-                <h3 className="text-3xl text-gray-300 mb-2 font-serif">SIXPOINT</h3>
-                <h2 className="text-4xl text-gray-300 mb-8 font-serif">VICTORIA</h2>
+              <div className='mb-8'>
+                <h3 className="text-2xl text-gray-300 mb-2 font-serif">SIXPOINT</h3>
+                <h2 className="text-3xl text-gray-300 mb-8 font-serif">VICTORIA</h2>
               </div>
 
               <div>

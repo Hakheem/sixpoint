@@ -29,7 +29,7 @@ const TopHeader = ({ isScrolled }: TopHeaderProps) => {
 
       <div className="flex justify-end">
         <Button className="font-semibold shadow-md">
-          Book Your Stay
+          Find My Room
         </Button>
       </div>
     </nav>

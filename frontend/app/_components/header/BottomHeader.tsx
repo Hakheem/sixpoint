@@ -78,7 +78,7 @@ const BottomHeader = ({ isScrolled }: BottomHeaderProps) => {
           <ul className={`flex flex-col gap-2 text-sm transition-colors ${isScrolled ? 'text-gray-700' : 'text-white'
             }`}>
             <li className="flex items-center gap-2">
-              <Phone className="w-4 h-4 text-primary shrink-0" />
+              <Phone className="w-4 h-4 text-accent shrink-0" />
               <a
                 href="tel:+254769403162"
                 className={`hover:text-primary transition-colors ${isScrolled ? 'text-gray-700' : 'text-white'
@@ -98,10 +98,10 @@ const BottomHeader = ({ isScrolled }: BottomHeaderProps) => {
                 <Link
                   href={link.href}
                   className={`transition-colors ${isActive(link.href)
-                      ? 'text-primary'
+                      ? 'text-accent'
                       : isScrolled
-                        ? 'text-gray-700 hover:text-accent'
-                        : 'text-white hover:text-accent'
+                        ? 'text-gray-700 hover:text-primary'
+                        : 'text-white hover:text-primary'
                     }`}
                 >
                   {link.label}
@@ -165,7 +165,7 @@ const BottomHeader = ({ isScrolled }: BottomHeaderProps) => {
               : 'translate-x-full opacity-0 pointer-events-none'
             }`}>
             <Button className="font-semibold shadow-md">
-              Book Your Stay
+             Find My Room
             </Button>
           </div>
         </div>
