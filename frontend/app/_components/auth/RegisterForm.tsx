@@ -231,7 +231,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
             Sign in
           </Button>
         </div>
-      </div>
+      </div> 
     </motion.div>
   );
 };

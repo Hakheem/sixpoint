@@ -187,7 +187,7 @@ const LoginForm: React.FC<LoginFormProps> = ({
             Sign up
           </Button>
         </div>
-      </div>
+      </div> 
     </motion.div>
   );
 };

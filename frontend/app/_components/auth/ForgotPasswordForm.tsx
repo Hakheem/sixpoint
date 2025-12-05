@@ -117,7 +117,7 @@ const ForgotPasswordForm: React.FC<ForgotPasswordFormProps> = ({
         <Button
           onClick={onSwitchToLogin}
           type="button"
-          variant="link"
+          variant="link" 
           className="w-full text-gray-600 hover:text-gray-700 flex items-center justify-center gap-2"
           disabled={isLoading}
         >
@@ -125,7 +125,7 @@ const ForgotPasswordForm: React.FC<ForgotPasswordFormProps> = ({
           Back to login
         </Button>
       </div>
-    </motion.div>
+    </motion.div> 
   );
 };
 

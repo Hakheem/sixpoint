@@ -6,9 +6,10 @@ import AuthLayout from '@/app/_components/auth/AuthLayout';
 import LoginForm from '@/app/_components/auth/LoginForm';
 import RegisterForm from '@/app/_components/auth/RegisterForm';
 import ForgotPasswordForm from '@/app/_components/auth/ForgotPasswordForm';
-// import { signUp, signIn, requestPasswordReset } from '@/lib/user-auth-client';
 import { useRouter } from 'next/navigation';
 import { toast } from "sonner";
+import { signIn, signUp } from '@/lib/auth-client';
+import { requestPasswordReset } from '@/lib/auth-client';
 
 type AuthView = 'login' | 'register' | 'forgot-password';
 
@@ -45,12 +46,16 @@ export default function UserLoginPage() {
 
   const handleLogin = async (formData: any) => {
     setIsLoading(true);
-    try { 
+    try {
+      console.log('Attempting login with:', formData.email);
+      
       const result = await signIn.email({
         email: formData.email,
         password: formData.password,
         rememberMe: formData.rememberMe,
       });
+
+      console.log('Login result:', result);
 
       if (result.error) {
         toast.error("Login Failed", {
@@ -64,6 +69,7 @@ export default function UserLoginPage() {
         router.refresh();
       }
     } catch (error: any) {
+      console.error('Login error:', error);
       toast.error("Error", {
         description: error.message || "Something went wrong. Please try again.",
       });
@@ -75,11 +81,15 @@ export default function UserLoginPage() {
   const handleRegister = async (formData: any) => {
     setIsLoading(true);
     try {
+      console.log('Attempting registration with:', formData.email);
+      
       const result = await signUp.email({
         email: formData.email,
         name: formData.name,
         password: formData.password,
       });
+
+      console.log('Registration result:', result);
 
       if (result.error) {
         toast.error("Registration Failed", {
@@ -93,6 +103,7 @@ export default function UserLoginPage() {
         router.refresh();
       }
     } catch (error: any) {
+      console.error('Registration error:', error);
       toast.error("Error", {
         description: error.message || "Something went wrong. Please try again.",
       });
@@ -104,10 +115,11 @@ export default function UserLoginPage() {
   const handleForgotPassword = async (email: string) => {
     setIsLoading(true);
     try {
-      const result = await requestPasswordReset({
-        email,
-        redirectTo: `${window.location.origin}/reset-password`,
-      });
+      console.log('Requesting password reset for:', email);
+      
+      const result = await requestPasswordReset({ email });
+
+      console.log('Password reset request result:', result);
 
       if (result.error) {
         toast.error("Error", {
@@ -119,6 +131,7 @@ export default function UserLoginPage() {
         });
       }
     } catch (error: any) {
+      console.error('Forgot password error:', error);
       toast.error("Error", {
         description: error.message || "Something went wrong. Please try again.",
       });
@@ -130,11 +143,14 @@ export default function UserLoginPage() {
   const handleGoogleAuth = async () => {
     setIsLoading(true);
     try {
-      await signIn.social({
-        provider: 'google',
-        callbackURL: '/',
-      });
+      console.log('Starting Google auth...');
+      
+      // For Better Auth v1.4.5, Google auth might need special handling
+      // You might need to redirect to your backend's Google OAuth endpoint
+      window.location.href = `${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8080'}/api/auth/sign-in/google`;
+      
     } catch (error: any) {
+      console.error('Google auth error:', error);
       toast.error("Error", {
         description: error.message || "Could not sign in with Google",
       });

@@ -4,6 +4,7 @@ import "./globals.css";
 import { Toaster } from "@/components/ui/sonner"
 import Footer from "./_components/Footer"
 import Header from "./_components/header/Header";
+import { AuthProvider } from "./providers";
 
 const workSans = Work_Sans({
   variable: "--font-work-sans",
@@ -46,10 +47,12 @@ export default function RootLayout({
       <body
         className={`${workSans.variable} ${cormorantGaramond.variable} antialiased`}
       >
+         <AuthProvider>
         <Header />
         {children}
         <Footer />
         <Toaster />
+         </AuthProvider>
       </body>
     </html>
   );
