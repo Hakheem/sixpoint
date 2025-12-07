@@ -49,10 +49,10 @@ const Services = () => {
           className="relative z-10 text-gray-100 padded"
         >
 
-          <h2 className="title title text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl text-center font-bold max-w-5xl mx-auto  mb-6">
+          <h2 className="title text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl text-center font-bold max-w-5xl mx-auto  mb-6">
             One of East Africa's Most Desirable Locations
           </h2>
-          <p className="text-base md:text-lg  tracking-wide mt-6">
+          <p className="text-base md:text-lg tracking-wide mt-6">
             Kisumu's jewel on Lake Victoria.
           </p>
         </motion.div>
@@ -87,7 +87,7 @@ const Services = () => {
                   />
                 </div>
                 <div className="p-8 text-center">
-                  <h3 className="text-2xl  mb-4 text-gray-900">
+                  <h3 className="text-2xl mb-4 text-gray-900">
                     {card.title}
                   </h3>
                   <p className="text-sm text-gray-600 leading-relaxed mb-6">

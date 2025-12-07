@@ -19,7 +19,7 @@ const AboutHeader = () => {
       <div className="absolute inset-0 bg-linear-to-b from-black via-black/50 to-transparent" />
       
       {/* Content */}
-      <div className="relative z-10 h-full flex flex-col justify-center items-center text-center px-4 sm:px-6 lg:px-8 py-12 sm:py-16"> 
+      <div className="relative z-10 h-full flex flex-col justify-center items-center text-center px-4 sm:px-6 lg:px-8 py-12 sm:py-16" style={{ paddingTop: '170px' }}> 
         <div className="max-w-4xl mx-auto space-y-4"> 
           
           {/* Welcome Text */}
@@ -28,7 +28,7 @@ const AboutHeader = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
           >
-            <span className="text-primary text-lg sm:text-xl font-light tracking-wider">
+            <span className="text-primary text-lg sm:text-xl font tracking-wide">
               An Iconic Hotel Since 1998
             </span>
           </motion.div>
@@ -38,9 +38,9 @@ const AboutHeader = () => {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="mb-2"
+            className="mb-1"
           >
-            <h1 className="title text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold text-white leading-tight">
+            <h1 className="title text-4xl md:text-5xl lg:text-6xl  font-bold text-white leading-tight">
               About Sixpoint Victoria
             </h1>
           </motion.div>
@@ -51,7 +51,7 @@ const AboutHeader = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.4 }}
           >
-            <p className="text-white/90 text-base sm:text-lg lg:text-xl max-w-2xl mx-auto leading-relaxed">
+            <p className="text-white/90 text-base sm:text-lg lg:text-xl max-w-2xl mx-auto ">
               The seaside haven of warmth, tranquility and restoration.
             </p>
           </motion.div>
@@ -62,3 +62,4 @@ const AboutHeader = () => {
 };
 
 export default AboutHeader;
+

@@ -44,14 +44,14 @@ const itemVariants = {
     y: 0,
     transition: {
       duration: 0.6,
-      ease: [0.22, 1, 0.36, 1],
-    },
+      ease: "easeInOut" as const,
+    }, 
   },
 };
 
 export default function AboutAmenities() {
   return (
-    <section className="py-16 px-4 md:px-8 lg:px-16 bg-white">
+    <section className="py-16 padded">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <motion.div
@@ -64,7 +64,7 @@ export default function AboutAmenities() {
           <p className="text-sm tracking-widest text-gray-600 mb-4">
             Luxury, comfort & tailor-made service
           </p>
-          <h2 className="text-4xl md:text-5xl lg:text-6xl font-serif mb-6">
+          <h2 className="text-4xl md:text-5xl lg:text-6xl font-medium title mb-6">
             Amenities & Services
           </h2>
           <p className="text-gray-600 max-w-4xl mx-auto leading-relaxed">
@@ -80,7 +80,7 @@ export default function AboutAmenities() {
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: '-100px' }}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
+          className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-6"
         >
           {amenities.map((amenity, index) => (
             <motion.div
@@ -98,16 +98,18 @@ export default function AboutAmenities() {
                     className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
                   />
                   
-                  {/* Absolute border inside image */}
-                  <div className="absolute inset-0 border-4 border-primary pointer-events-none" />
+                  {/* Overlay div  */}
+                  <div className="absolute inset-0 m-2 pointer-events-none border-2 border-primary">
+                   </div>
+
                 </div>
 
-                {/* Gradient Overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent pointer-events-none" />
+                {/* Gradient Overlay - Fixed */}
+                <div className="absolute bottom-0 left-0 right-0 h-1/2 bg-linear-to-t from-black/80 via-black/40 to-transparent pointer-events-none" />
 
                 {/* Text Content */}
                 <div className="absolute bottom-0 left-0 right-0 p-6 text-white z-10">
-                  <h3 className="text-3xl font-serif text-primary mb-2">
+                  <h3 className="text-3xl title text-primary mb-2">
                     {amenity.title}
                   </h3>
                   <p className="text-xs tracking-widest uppercase">
