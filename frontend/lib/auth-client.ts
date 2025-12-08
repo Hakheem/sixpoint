@@ -2,7 +2,8 @@
 import { createAuthClient } from "better-auth/react";
 
 export const authClient = createAuthClient({
-  baseURL: process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8080",
+  baseURL: process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:8080",
+  basePath: "/api/auth"
 });
 
 // Export auth functions
@@ -12,7 +13,7 @@ export const { signIn, signUp, signOut, useSession } = authClient;
 export async function requestPasswordReset({ email }: { email: string }) {
   try {
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8080'}/api/auth/request-reset`,
+      `${process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:8080'}/api/auth/request-reset`,
       {
         method: 'POST',
         headers: {
@@ -44,7 +45,7 @@ export async function resetPasswordWithToken({
 }) {
   try {
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8080'}/api/auth/reset-password`,
+      `${process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:8080'}/api/auth/reset-password`,
       {
         method: 'POST',
         headers: {

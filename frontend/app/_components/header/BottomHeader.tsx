@@ -113,7 +113,7 @@ const BottomHeader = ({ isScrolled }: BottomHeaderProps) => {
               <DropdownMenu>
                 <DropdownMenuTrigger
                   className={`flex items-center gap-1 transition-colors outline-none focus:outline-none ${pathname === '/gallery' || pathname === '/blogs'
-                      ? 'text-primary'
+                      ? 'text-accent'
                       : isScrolled
                         ? 'text-gray-700 hover:text-accent'
                         : 'text-white hover:text-primary'
@@ -131,7 +131,7 @@ const BottomHeader = ({ isScrolled }: BottomHeaderProps) => {
                     <DropdownMenuItem key={link.href} asChild className="focus:bg-gray-50">
                       <Link
                         href={link.href}
-                        className={`w-full cursor-pointer px-3 py-2 text-sm ${isActive(link.href) ? 'text-yellow-600 font-medium' : 'text-gray-700'
+                        className={`w-full cursor-pointer px-3 py-2 text-sm ${isActive(link.href) ? 'text-accent font-medium' : 'text-gray-700'
                           }`}
                       >
                         {link.label}

@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Wifi, Tv, Coffee, Wind, Bath, Sparkles } from 'lucide-react';
+import Link from 'next/link';
 import {
   HoverCard,
   HoverCardContent,
@@ -100,80 +101,81 @@ const RoomCard = ({ room }: { room: Room }) => {
   const [isHovered, setIsHovered] = useState(false);
 
   return (
-    <motion.div
-      className="relative  overflow-hidden rounded cursor-pointer group h-full"
-      onHoverStart={() => setIsHovered(true)}
-      onHoverEnd={() => setIsHovered(false)}
-    >
-      {/* Image */}
-      <div className="relative w-full h-full min-h-[400px]">
-        <img
-          src={room.image}
-          alt={room.name}
-          className="w-full h-full object-cover"
-        />
+    <Link href={`/rooms/${room.id}`}>
+      <motion.div
+        className="relative overflow-hidden rounded cursor-pointer group h-full"
+        onHoverStart={() => setIsHovered(true)}
+        onHoverEnd={() => setIsHovered(false)}
+      >
+        {/* Image */}
+        <div className="relative w-full h-full min-h-[400px]">
+          <img
+            src={room.image}
+            alt={room.name}
+            className="w-full h-full object-cover"
+          />
 
-        {/* Gradient Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+          {/* Gradient Overlay */}
+          <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/20 to-transparent" />
 
-        {/* Content */}
-        <div className="absolute inset-0 flex flex-col justify-end p-6">
-          {/* Always visible: Name and Price */}
-          <div className="text-white mb-4">
-            <h3 className="text-2xl font-bold mb-1">{room.name}</h3>
-            <p className="text-lg font-semibold">${room.price} <span className="text-sm font-normal text-gray-300">per night</span></p>
-          </div>
+          {/* Content */}
+          <div className="absolute inset-0 flex flex-col justify-end p-6">
+            {/* Always visible: Name and Price */}
+            <div className="text-white mb-4">
+              <h3 className="text-2xl font-bold mb-1">{room.name}</h3>
+              <p className="text-lg font-semibold">${room.price} <span className="text-sm font-normal text-gray-300">per night</span></p>
+            </div>
 
-          {/* Hover content */}
-          <AnimatePresence>
-            {isHovered && (
-              <motion.div
-                initial={{ y: 50, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                exit={{ y: 50, opacity: 0 }}
-                transition={{ duration: 0.3, ease: "easeOut" }}
-              >
-                {/* Divider */}
-                <div className="border-t border-white/20 mb-4" />
+            {/* Hover content */}
+            <AnimatePresence>
+              {isHovered && (
+                <motion.div
+                  initial={{ y: 50, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  exit={{ y: 50, opacity: 0 }}
+                  transition={{ duration: 0.3, ease: "easeOut" }}
+                >
+                  {/* Divider */}
+                  <div className="border-t border-white/20 mb-4" />
 
-                {/* Button and Amenities inline */}
-                <div className="flex items-center justify-between">
-                  {/* Book Now Button */}
-                  <Button
-                  >
-                    Book Now
-                  </Button>
+                  {/* Button and Amenities inline */}
+                  <div className="flex items-center justify-between">
+                    {/* View Details Button */}
+                    <Button className="bg-white text-black hover:bg-gray-100">
+                      View Details
+                    </Button>
 
-                  {/* Amenities */}
-                  <div className="flex items-center gap-4">
-                    {room.amenities.map((amenity, index) => (
-                      <HoverCard key={index} openDelay={100}>
-                        <HoverCardTrigger>
-                          <motion.div
-                            whileHover={{ scale: 1.2 }}
-                            className="text-white hover:text-gray-300 transition-colors cursor-help"
-                          >
-                            {amenity.icon}
-                          </motion.div>
-                        </HoverCardTrigger>
-                        <HoverCardContent className="w-auto">
-                          <div className="space-y-1">
-                            <h4 className="text-sm font-semibold">{amenity.name}</h4>
-                            <p className="text-xs text-muted">
-                              {amenity.description}
-                            </p>
-                          </div>
-                        </HoverCardContent>
-                      </HoverCard>
-                    ))}
+                    {/* Amenities */}
+                    <div className="flex items-center gap-4">
+                      {room.amenities.map((amenity, index) => (
+                        <HoverCard key={index} openDelay={100}>
+                          <HoverCardTrigger>
+                            <motion.div
+                              whileHover={{ scale: 1.2 }}
+                              className="text-white hover:text-gray-300 transition-colors cursor-help"
+                            >
+                              {amenity.icon}
+                            </motion.div>
+                          </HoverCardTrigger>
+                          <HoverCardContent className="w-auto">
+                            <div className="space-y-1">
+                              <h4 className="text-sm font-semibold">{amenity.name}</h4>
+                              <p className="text-xs text-muted-foreground">
+                                {amenity.description}
+                              </p>
+                            </div>
+                          </HoverCardContent>
+                        </HoverCard>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
-      </div>
-    </motion.div>
+      </motion.div>
+    </Link>
   );
 };
 

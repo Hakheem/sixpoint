@@ -1,9 +1,11 @@
-// src/controllers/auth-controller.ts
-import { Request, Response } from 'express';
-import { auth, prisma } from '../lib/auth';
-import crypto from 'crypto';
-import { emailService } from '../lib/email';
-import * as bcrypt from 'bcryptjs';
+import { Request, Response } from "express";
+import { auth } from "../lib/auth";
+import crypto from "crypto";
+import { emailService } from "../lib/email";
+import * as bcrypt from "bcryptjs";
+import { User } from "../models/user";
+import { Verification } from "../models/verification";
+import { Account } from "../models/account";
 
 export const authController = {
   // Get current user
@@ -12,45 +14,41 @@ export const authController = {
       const session = await auth.api.getSession({
         headers: req.headers as any,
       });
-      
+
       if (!session) {
-        return res.status(401).json({ 
+        return res.status(401).json({
           success: false,
-          error: 'Not authenticated' 
+          error: "Not authenticated",
         });
       }
-      
-      const user = await prisma.user.findUnique({
-        where: { id: session.user.id },
-        select: {
-          id: true,
-          email: true,
-          name: true,
-          phone: true,
-          role: true,
-          image: true,
-          isActive: true,
-          emailVerified: true,
-          createdAt: true
-        }
-      });
-      
+
+      const user = await User.findById(session.user.id);
+
       if (!user) {
-        return res.status(404).json({ 
+        return res.status(404).json({
           success: false,
-          error: 'User not found' 
+          error: "User not found",
         });
       }
-      
-      res.json({ 
+
+      res.json({
         success: true,
-        user 
+        user: {
+          id: user._id,
+          email: user.email,
+          name: user.name,
+          phone: user.phone,
+          role: user.role,
+          isActive: user.isActive,
+          emailVerified: user.emailVerified,
+          createdAt: user.createdAt,
+        },
       });
     } catch (error) {
-      console.error('Get current user error:', error);
-      res.status(500).json({ 
+      console.error("Get current user error:", error);
+      res.status(500).json({
         success: false,
-        error: 'Internal server error' 
+        error: "Internal server error",
       });
     }
   },
@@ -59,63 +57,53 @@ export const authController = {
   requestPasswordReset: async (req: Request, res: Response) => {
     try {
       const { email } = req.body;
-      
+
       if (!email) {
-        return res.status(400).json({ 
+        return res.status(400).json({
           success: false,
-          error: 'Email is required' 
+          error: "Email is required",
         });
       }
-      
-      const user = await prisma.user.findUnique({
-        where: { email }
-      });
-      
+
+      const user = await User.findOne({ email });
+
       if (!user) {
-        // Don't reveal if user exists or not
-        return res.json({ 
+        return res.json({
           success: true,
-          message: 'If an account with that email exists, a password reset link has been sent.' 
+          message:
+            "If an account with that email exists, a password reset link has been sent.",
         });
       }
-      
+
       // Generate reset token
-      const resetToken = crypto.randomBytes(32).toString('hex');
+      const resetToken = crypto.randomBytes(32).toString("hex");
       const resetTokenExpiry = new Date(Date.now() + 3600000); // 1 hour
-      
+
       // Store verification token
-      await prisma.verification.create({
-        data: {
-          identifier: email,
-          value: resetToken,
-          expiresAt: resetTokenExpiry,
-          userId: user.id
-        }
+      const verification = new Verification({
+        identifier: email,
+        token: resetToken,
+        expiresAt: resetTokenExpiry,
       });
-      
+      await verification.save();
+
       // Send email with reset link
-      const emailSent = await emailService.sendPasswordReset(
-        email, 
-        user.name || user.email, 
+      await emailService.sendPasswordReset(
+        email,
+        user.name || user.email,
         resetToken
       );
-      
-      if (!emailSent) {
-        console.error('Failed to send password reset email');
-        // Still return success to user, but log the error
-      }
-      
-      res.json({ 
+
+      res.json({
         success: true,
-        message: 'If an account with that email exists, a password reset link has been sent.',
-        // Only include token in development
-        ...(process.env.NODE_ENV === 'development' && { token: resetToken })
+        message:
+          "If an account with that email exists, a password reset link has been sent.",
       });
     } catch (error) {
-      console.error('Request password reset error:', error);
-      res.status(500).json({ 
+      console.error("Request password reset error:", error);
+      res.status(500).json({
         success: false,
-        error: 'Internal server error' 
+        error: "Internal server error",
       });
     }
   },
@@ -124,137 +112,111 @@ export const authController = {
   resetPassword: async (req: Request, res: Response) => {
     try {
       const { token, newPassword } = req.body;
-      
+
       if (!token || !newPassword) {
-        return res.status(400).json({ 
+        return res.status(400).json({
           success: false,
-          error: 'Token and new password are required' 
+          error: "Token and new password are required",
         });
       }
-      
+
       if (newPassword.length < 8) {
-        return res.status(400).json({ 
+        return res.status(400).json({
           success: false,
-          error: 'Password must be at least 8 characters' 
+          error: "Password must be at least 8 characters",
         });
       }
-      
+
       // Find valid verification token
-      const verification = await prisma.verification.findFirst({
-        where: {
-          value: token,
-          expiresAt: { gte: new Date() }
-        },
-        include: {
-          user: true
-        }
+      const verification = await Verification.findOne({
+        token,
+        expiresAt: { $gte: new Date() },
       });
-      
-      if (!verification || !verification.user) {
-        return res.status(400).json({ 
+
+      if (!verification) {
+        return res.status(400).json({
           success: false,
-          error: 'Invalid or expired reset token' 
+          error: "Invalid or expired reset token",
         });
       }
-      
-      // Update password using Better Auth
-      const account = await prisma.account.findFirst({
-        where: {
-          userId: verification.user.id,
-          providerId: 'credential'
-        }
-      });
-      
+
+      const user = await User.findOne({ email: verification.identifier });
+
+      if (!user) {
+        return res.status(404).json({
+          success: false,
+          error: "User not found",
+        });
+      }
+
+      // Update password
       const hashedPassword = await bcrypt.hash(newPassword, 10);
-      
-      if (account) {
-        // Update existing account
-        await prisma.account.update({
-          where: { id: account.id },
-          data: { 
-            password: hashedPassword,
-            updatedAt: new Date()
-          }
-        });
-      } else {
-        // Create new credential account - USE THE CORRECT FIELD NAMES
-        await prisma.account.create({
-          data: {
-            userId: verification.user.id,
-            providerId: 'credential',
-            accountId: verification.user.email, // Use 'accountId' NOT 'providerAccountId'
-            password: hashedPassword
-          }
-        });
-      }
-      
+      await User.findByIdAndUpdate(user._id, { password: hashedPassword });
+
       // Delete the verification token
-      await prisma.verification.delete({
-        where: { id: verification.id }
-      });
-      
-      res.json({ 
+      await Verification.deleteOne({ _id: verification._id });
+
+      res.json({
         success: true,
-        message: 'Password reset successfully' 
+        message: "Password reset successfully",
       });
     } catch (error) {
-      console.error('Reset password error:', error);
-      res.status(500).json({ 
+      console.error("Reset password error:", error);
+      res.status(500).json({
         success: false,
-        error: 'Internal server error' 
+        error: "Internal server error",
       });
     }
   },
 
-  // Verify email (optional - if you want to keep it for other purposes)
+  // Verify email
   verifyEmail: async (req: Request, res: Response) => {
     try {
       const { token } = req.body;
-      
+
       if (!token) {
-        return res.status(400).json({ 
+        return res.status(400).json({
           success: false,
-          error: 'Verification token is required' 
+          error: "Verification token is required",
         });
       }
-      
-      const verification = await prisma.verification.findFirst({
-        where: {
-          value: token,
-          expiresAt: { gte: new Date() }
-        },
-        include: {
-          user: true
-        }
+
+      const verification = await Verification.findOne({
+        token,
+        expiresAt: { $gte: new Date() },
       });
-      
-      if (!verification || !verification.user) {
-        return res.status(400).json({ 
+
+      if (!verification) {
+        return res.status(400).json({
           success: false,
-          error: 'Invalid or expired verification token' 
+          error: "Invalid or expired verification token",
         });
       }
-      
+
+      const user = await User.findOne({ email: verification.identifier });
+
+      if (!user) {
+        return res.status(404).json({
+          success: false,
+          error: "User not found",
+        });
+      }
+
       // Mark email as verified
-      await prisma.user.update({
-        where: { id: verification.user.id },
-        data: { emailVerified: true }
-      });
-      
+      await User.findByIdAndUpdate(user._id, { emailVerified: true });
+
       // Delete the verification token
-      await prisma.verification.delete({
-        where: { id: verification.id }
-      });
-      
-      res.json({ 
+      await Verification.deleteOne({ _id: verification._id });
+
+      res.json({
         success: true,
-        message: 'Email verified successfully' 
+        message: "Email verified successfully",
       });
     } catch (error) {
-      console.error('Verify email error:', error);
-      res.status(500).json({ 
+      console.error("Verify email error:", error);
+      res.status(500).json({
         success: false,
-        error: 'Internal server error' 
+        error: "Internal server error",
       });
     }
   },
@@ -262,19 +224,16 @@ export const authController = {
   // Sign out
   signOut: async (req: Request, res: Response) => {
     try {
-      // Better Auth handles sign out through its API
-      // This endpoint just confirms the action
-      res.json({ 
+      res.json({
         success: true,
-        message: 'Sign out successful' 
+        message: "Sign out successful",
       });
     } catch (error) {
-      console.error('Sign out error:', error);
-      res.status(500).json({ 
+      console.error("Sign out error:", error);
+      res.status(500).json({
         success: false,
-        error: 'Internal server error' 
+        error: "Internal server error",
       });
     }
-  }
+  },
 };
-

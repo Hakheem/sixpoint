@@ -1,6 +1,16 @@
 // src/middleware/auth-middleware.ts
 import { Request, Response, NextFunction } from 'express';
-import { auth, prisma } from '../lib/auth';
+import { auth } from '../lib/auth';
+import { User } from '../models/user';
+
+// Extend Express Request type to include user
+declare global {
+  namespace Express {
+    interface Request {
+      user?: any;
+    }
+  }
+}
 
 // Simple auth middleware - just checks if user is logged in
 export const requireAuth = async (req: Request, res: Response, next: NextFunction) => {
@@ -13,9 +23,7 @@ export const requireAuth = async (req: Request, res: Response, next: NextFunctio
       return res.status(401).json({ error: 'Authentication required' });
     }
     
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id }
-    });
+    const user = await User.findById(session.user.id);
     
     if (!user) {
       return res.status(401).json({ error: 'User not found' });
@@ -52,4 +60,3 @@ export const requireSuperAdmin = async (req: Request, res: Response, next: NextF
     next();
   });
 };
-

@@ -7,7 +7,7 @@ const adminRouter = Router();
 
 // Dashboard stats (Admin & SuperAdmin)
 adminRouter.get('/dashboard/stats', requireAdmin, adminController.getDashboardStats);
-
+ 
 // User management (SuperAdmin only)
 adminRouter.get('/users', requireSuperAdmin, adminController.getAllUsers);
 adminRouter.put('/users/:id/role', requireSuperAdmin, adminController.updateUserRole);

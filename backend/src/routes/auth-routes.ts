@@ -5,18 +5,16 @@ import { authController } from '../controllers/auth-controller';
 
 const authRouter = Router();
 
-// Better Auth API routes 
-authRouter.all('/*', (req, res) => {
-  // Just pass req and res directly to auth.handler
-  return (auth.handler as any)(req, res);
-});
-
-// Custom auth routes
+// Custom auth routes (must come BEFORE the catch-all)
 authRouter.get('/me', authController.getCurrentUser);
 authRouter.post('/request-reset', authController.requestPasswordReset);
 authRouter.post('/reset-password', authController.resetPassword);
 authRouter.post('/verify-email', authController.verifyEmail);
 authRouter.post('/sign-out', authController.signOut);
 
-export default authRouter;
+// Better Auth API routes - catch-all (must be LAST)
+authRouter.use((req, res) => {
+  return (auth.handler as any)(req, res);
+});
 
+export default authRouter;

@@ -1,6 +1,13 @@
 // src/routes/public-routes.ts
 import { Router } from 'express';
-import { prisma } from '../lib/auth';
+import { Room } from '../models/room';
+import { RoomType } from '../models/room-type';
+import { Amenity } from '../models/amenity';
+import { ExtraService } from '../models/extra-service';
+import { SiteConfig } from '../models/site-config';
+import { VisitPlace } from '../models/visit-place';
+import { Booking } from '../models/booking';
+import { Review } from '../models/review';
 
 const publicRouter = Router();
 
@@ -20,72 +27,50 @@ publicRouter.get('/rooms', async (req, res) => {
     
     const skip = (Number(page) - 1) * Number(limit);
     
-    const where: any = {};
+    const filter: any = {};
 
     // Price filter
     if (minPrice || maxPrice) {
-      where.pricePerNight = {};
-      if (minPrice) where.pricePerNight.gte = Number(minPrice);
-      if (maxPrice) where.pricePerNight.lte = Number(maxPrice);
+      filter.pricePerNight = {};
+      if (minPrice) filter.pricePerNight.$gte = Number(minPrice);
+      if (maxPrice) filter.pricePerNight.$lte = Number(maxPrice);
     }
     
     // Capacity filter
     if (capacity) {
-      where.capacity = { gte: Number(capacity) };
+      filter.capacity = { $gte: Number(capacity) };
     }
     
     // Room type filter
     if (typeId) {
-      where.typeId = typeId;
+      filter.typeId = typeId;
     }
     
-    // Get rooms with images
-    const rooms = await prisma.room.findMany({
-      where,
-      skip,
-      take: Number(limit),
-      include: {
-        type: {
-          select: { name: true, description: true }
-        },
-        amenities: {
-          include: {
-            amenity: {
-              select: { name: true, iconName: true }
-            }
-          }
-        },
-        images: {
-          take: 3,
-          select: { url: true, alt: true, orientation: true }
-        },
-        _count: {
-          select: {
-            reviews: true
-          }
-        }
-      },
-      orderBy: {
-        [sortBy as string]: sortOrder
-      }
-    });
+    // Get rooms
+    const rooms = await Room.find(filter)
+      .skip(skip)
+      .limit(Number(limit))
+      .populate('typeId', 'name description')
+      .populate('amenities')
+      .populate('images')
+      .sort({ [sortBy as string]: sortOrder === 'desc' ? -1 : 1 });
     
-    const total = await prisma.room.count({ where });
+    const total = await Room.countDocuments(filter);
     
     // Calculate average ratings for each room
     const roomsWithRatings = await Promise.all(
-      rooms.map(async (room) => {
-        const reviews = await prisma.review.findMany({
-          where: { roomId: room.id, hidden: false },
-          select: { rating: true }
-        });
+      rooms.map(async (room: any) => {
+        const reviews = await Review.find({ 
+          roomId: room._id, 
+          hidden: false 
+        }).select('rating');
         
         const avgRating = reviews.length > 0 
-          ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length
+          ? reviews.reduce((sum: number, review: any) => sum + review.rating, 0) / reviews.length
           : null;
         
         return {
-          ...room,
+          ...room.toObject(),
           avgRating,
           totalReviews: reviews.length
         };
@@ -116,31 +101,11 @@ publicRouter.get('/rooms/:id', async (req, res) => {
   try {
     const { id } = req.params;
     
-    const room = await prisma.room.findUnique({
-      where: { id },
-      include: {
-        type: {
-          select: { name: true, description: true }
-        },
-        amenities: {
-          include: {
-            amenity: {
-              select: { name: true, description: true, iconName: true }
-            }
-          }
-        },
-        extraServices: {
-          include: {
-            extraService: {
-              select: { title: true, description: true, price: true, imageUrl: true }
-            }
-          }
-        },
-        images: {
-          select: { url: true, alt: true, orientation: true }
-        }
-      }
-    });
+    const room = await Room.findById(id)
+      .populate('typeId', 'name description')
+      .populate('amenities')
+      .populate('extraServices')
+      .populate('images');
     
     if (!room) {
       return res.status(404).json({ 
@@ -150,46 +115,35 @@ publicRouter.get('/rooms/:id', async (req, res) => {
     }
     
     // Get reviews for this room
-    const reviews = await prisma.review.findMany({
-      where: { roomId: id, hidden: false },
-      include: {
-        user: {
-          select: { name: true, image: true }
-        }
-      },
-      orderBy: { createdAt: 'desc' },
-      take: 10
-    });
+    const reviews = await Review.find({ 
+      roomId: id, 
+      hidden: false 
+    })
+      .populate('userId', 'name image')
+      .sort({ createdAt: -1 })
+      .limit(10);
     
     // Calculate average rating
-    const reviewStats = await prisma.review.aggregate({
-      where: { roomId: id, hidden: false },
-      _avg: { rating: true },
-      _count: { rating: true }
-    });
+    const allReviews = await Review.find({ roomId: id, hidden: false });
+    const avgRating = allReviews.length > 0
+      ? allReviews.reduce((sum: number, r: any) => sum + r.rating, 0) / allReviews.length
+      : null;
     
     // Get similar rooms (same type)
-    const similarRooms = await prisma.room.findMany({
-      where: {
-        typeId: room.typeId,
-        id: { not: id }
-      },
-      take: 4,
-      include: {
-        images: {
-          take: 1,
-          select: { url: true }
-        }
-      }
-    });
+    const similarRooms = await Room.find({
+      typeId: (room as any).typeId,
+      _id: { $ne: id }
+    })
+      .limit(4)
+      .populate('images');
     
     res.json({
       success: true,
       data: {
-        ...room,
+        ...room.toObject(),
         reviews,
-        avgRating: reviewStats._avg.rating,
-        totalReviews: reviewStats._count.rating,
+        avgRating,
+        totalReviews: allReviews.length,
         similarRooms
       }
     });
@@ -202,7 +156,7 @@ publicRouter.get('/rooms/:id', async (req, res) => {
   }
 });
 
-// Get room availability (check dates)
+// Get room availability
 publicRouter.get('/rooms/:id/availability', async (req, res) => {
   try {
     const { id } = req.params;
@@ -219,38 +173,27 @@ publicRouter.get('/rooms/:id/availability', async (req, res) => {
     const checkOutDate = new Date(checkOut as string);
     
     // Check for overlapping bookings
-    const overlappingBookings = await prisma.booking.findMany({
-      where: {
-        rooms: {
-          some: {
-            roomId: id
+    const overlappingBookings = await Booking.find({
+      'rooms.roomId': id,
+      $or: [
+        {
+          checkIn: {
+            $gte: checkInDate,
+            $lt: checkOutDate
           }
         },
-        OR: [
-          // Existing booking starts during requested period
-          {
-            checkIn: {
-              gte: checkInDate,
-              lt: checkOutDate
-            }
-          },
-          // Existing booking ends during requested period
-          {
-            checkOut: {
-              gt: checkInDate,
-              lte: checkOutDate
-            }
-          },
-          // Requested period is within existing booking
-          {
-            checkIn: { lte: checkInDate },
-            checkOut: { gte: checkOutDate }
+        {
+          checkOut: {
+            $gt: checkInDate,
+            $lte: checkOutDate
           }
-        ],
-        status: {
-          in: ['CONFIRMED', 'CHECKED_IN']
+        },
+        {
+          checkIn: { $lte: checkInDate },
+          checkOut: { $gte: checkOutDate }
         }
-      }
+      ],
+      status: { $in: ['CONFIRMED', 'CHECKED_IN'] }
     });
     
     const isAvailable = overlappingBookings.length === 0;
@@ -275,17 +218,22 @@ publicRouter.get('/rooms/:id/availability', async (req, res) => {
 // Get all room types
 publicRouter.get('/room-types', async (req, res) => {
   try {
-    const roomTypes = await prisma.roomType.findMany({
-      include: {
-        _count: {
-          select: { rooms: true }
-        }
-      }
-    });
+    const roomTypes = await RoomType.find();
+    
+    // Count rooms for each type
+    const typesWithCount = await Promise.all(
+      roomTypes.map(async (type: any) => {
+        const count = await Room.countDocuments({ typeId: type._id });
+        return {
+          ...type.toObject(),
+          roomCount: count
+        };
+      })
+    );
     
     res.json({
       success: true,
-      data: roomTypes
+      data: typesWithCount
     });
   } catch (error) {
     console.error('Get room types error:', error);
@@ -299,9 +247,7 @@ publicRouter.get('/room-types', async (req, res) => {
 // Get all amenities
 publicRouter.get('/amenities', async (req, res) => {
   try {
-    const amenities = await prisma.amenity.findMany({
-      orderBy: { name: 'asc' }
-    });
+    const amenities = await Amenity.find().sort({ name: 1 });
     
     res.json({
       success: true,
@@ -319,9 +265,7 @@ publicRouter.get('/amenities', async (req, res) => {
 // Get extra services
 publicRouter.get('/extra-services', async (req, res) => {
   try {
-    const extraServices = await prisma.extraService.findMany({
-      orderBy: { title: 'asc' }
-    });
+    const extraServices = await ExtraService.find().sort({ title: 1 });
     
     res.json({
       success: true,
@@ -339,20 +283,17 @@ publicRouter.get('/extra-services', async (req, res) => {
 // Get site configuration
 publicRouter.get('/site-config', async (req, res) => {
   try {
-    const config = await prisma.siteConfig.findFirst({
-      orderBy: { createdAt: 'desc' }
-    });
+    const config = await SiteConfig.findOne().sort({ createdAt: -1 });
     
-    // Return default config if none exists
     const defaultConfig = {
       logoUrl: null,
       heroImageUrl: null,
-      heroMainHeading: 'Welcome to SixPoint Hotel',
+      heroMainHeading: 'Welcome to Sixpoint Victoria',
       heroHighlightedText: 'Luxury & Comfort',
       heroDescription: 'Experience unparalleled hospitality and world-class amenities',
-      phone1: '+1234567890',
-      phone2: '+0987654321',
-      location: '123 Luxury Street, Nairobi, Kenya',
+      phone1: '+254712345678',
+      phone2: '+254787654321',
+      location: 'Kisumu, Kenya',
       facebook: null,
       instagram: null,
       tiktok: null,
@@ -371,12 +312,12 @@ publicRouter.get('/site-config', async (req, res) => {
       data: {
         logoUrl: null,
         heroImageUrl: null,
-        heroMainHeading: 'Welcome to SixPoint Hotel',
+        heroMainHeading: 'Welcome to Sixpoint Victoria',
         heroHighlightedText: 'Luxury & Comfort',
         heroDescription: 'Experience unparalleled hospitality and world-class amenities',
-        phone1: '+1234567890',
-        phone2: '+0987654321',
-        location: '123 Luxury Street, Nairobi, Kenya',
+        phone1: '+254712345678',
+        phone2: '+254787654321',
+        location: 'Kisumu, Kenya',
         facebook: null,
         instagram: null,
         tiktok: null,
@@ -387,12 +328,10 @@ publicRouter.get('/site-config', async (req, res) => {
   }
 });
 
-// Get visit places (attractions nearby)
+// Get visit places
 publicRouter.get('/visit-places', async (req, res) => {
   try {
-    const places = await prisma.visitPlace.findMany({
-      orderBy: { createdAt: 'desc' }
-    });
+    const places = await VisitPlace.find().sort({ createdAt: -1 });
     
     res.json({
       success: true,
@@ -407,7 +346,7 @@ publicRouter.get('/visit-places', async (req, res) => {
   }
 });
 
-// Calculate booking price (without creating booking)
+// Calculate booking price
 publicRouter.post('/calculate-price', async (req, res) => {
   try {
     const { roomIds, checkIn, checkOut, extraServices = [] } = req.body;
@@ -429,7 +368,6 @@ publicRouter.post('/calculate-price', async (req, res) => {
     const checkInDate = new Date(checkIn);
     const checkOutDate = new Date(checkOut);
     
-    // Validate dates
     if (checkInDate >= checkOutDate) {
       return res.status(400).json({ 
         success: false,
@@ -437,7 +375,6 @@ publicRouter.post('/calculate-price', async (req, res) => {
       });
     }
     
-    // Calculate number of nights
     const nights = Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24));
     
     if (nights < 1) {
@@ -448,10 +385,7 @@ publicRouter.post('/calculate-price', async (req, res) => {
     }
     
     // Get room prices
-    const rooms = await prisma.room.findMany({
-      where: { id: { in: roomIds } },
-      select: { id: true, title: true, pricePerNight: true }
-    });
+    const rooms = await Room.find({ _id: { $in: roomIds } }).select('_id title pricePerNight');
     
     if (rooms.length !== roomIds.length) {
       return res.status(400).json({ 
@@ -461,30 +395,24 @@ publicRouter.post('/calculate-price', async (req, res) => {
     }
     
     // Calculate room total
-    const roomTotal = rooms.reduce((sum, room) => sum + (room.pricePerNight * nights), 0);
+    const roomTotal = rooms.reduce((sum: number, room: any) => sum + (room.pricePerNight * nights), 0);
     
     // Calculate extra services total
     let extraServicesTotal = 0;
     let selectedExtraServices: Array<{id: string; title: string; price: number}> = [];
     
     if (extraServices.length > 0) {
-      const services = await prisma.extraService.findMany({
-        where: { id: { in: extraServices } }
-      });
-      
-      extraServicesTotal = services.reduce((sum, service) => sum + service.price, 0);
-      selectedExtraServices = services.map(s => ({
-        id: s.id,
+      const services = await ExtraService.find({ _id: { $in: extraServices } });
+      extraServicesTotal = services.reduce((sum: number, service: any) => sum + service.price, 0);
+      selectedExtraServices = services.map((s: any) => ({
+        id: s._id.toString(),
         title: s.title,
         price: s.price
       }));
     }
     
-    // Calculate taxes (example: 16% VAT)
     const taxRate = 0.16;
     const taxAmount = (roomTotal + extraServicesTotal) * taxRate;
-    
-    // Calculate total
     const subtotal = roomTotal + extraServicesTotal;
     const total = subtotal + taxAmount;
     
@@ -492,8 +420,8 @@ publicRouter.post('/calculate-price', async (req, res) => {
       success: true,
       data: {
         breakdown: {
-          rooms: rooms.map(room => ({
-            id: room.id,
+          rooms: rooms.map((room: any) => ({
+            id: room._id,
             title: room.title,
             pricePerNight: room.pricePerNight,
             nights,
@@ -525,42 +453,28 @@ publicRouter.post('/calculate-price', async (req, res) => {
   }
 });
 
-// Get featured rooms (for homepage)
+// Get featured rooms
 publicRouter.get('/featured-rooms', async (req, res) => {
   try {
-    const featuredRooms = await prisma.room.findMany({
-      take: 6,
-      include: {
-        type: {
-          select: { name: true }
-        },
-        images: {
-          take: 1,
-          select: { url: true, alt: true }
-        },
-        _count: {
-          select: {
-            reviews: true
-          }
-        }
-      },
-      orderBy: { pricePerNight: 'desc' }
-    });
+    const featuredRooms = await Room.find()
+      .limit(6)
+      .populate('typeId', 'name')
+      .populate('images')
+      .sort({ pricePerNight: -1 });
     
-    // Calculate ratings
     const roomsWithRatings = await Promise.all(
-      featuredRooms.map(async (room) => {
-        const reviews = await prisma.review.findMany({
-          where: { roomId: room.id, hidden: false },
-          select: { rating: true }
-        });
+      featuredRooms.map(async (room: any) => {
+        const reviews = await Review.find({ 
+          roomId: room._id, 
+          hidden: false 
+        }).select('rating');
         
         const avgRating = reviews.length > 0 
-          ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length
+          ? reviews.reduce((sum: number, review: any) => sum + review.rating, 0) / reviews.length
           : null;
         
         return {
-          ...room,
+          ...room.toObject(),
           avgRating,
           totalReviews: reviews.length
         };
@@ -580,7 +494,7 @@ publicRouter.get('/featured-rooms', async (req, res) => {
   }
 });
 
-// Contact form submission
+// Contact form
 publicRouter.post('/contact', async (req, res) => {
   try {
     const { name, email, phone, message, subject } = req.body;
@@ -592,7 +506,6 @@ publicRouter.post('/contact', async (req, res) => {
       });
     }
     
-    // TODO: Save to database and send email
     console.log('Contact form submission:', { name, email, phone, message, subject });
     
     res.json({

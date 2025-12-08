@@ -1,96 +1,156 @@
-// src/lib/auth.ts
-import { betterAuth } from 'better-auth';
-import { prismaAdapter } from "better-auth/adapters/prisma";
-import { PrismaClient } from '@prisma/client';
-import dotenv from 'dotenv';
-import fs from 'fs';
+import { betterAuth } from "better-auth";
+import mongoose from "mongoose";
+import { User } from "../models/user";
+import { Session } from "../models/session";
+import { Account } from "../models/account";
+import { Verification } from "../models/verification";
 
-// Load .env file
-dotenv.config({ path: '.env' });
+console.log("🔄 Initializing MongoDB Connection...");
+console.log(
+  "DATABASE_URL:",
+  process.env.DATABASE_URL ? "✅ Set" : "❌ NOT SET"
+);
+console.log(
+  "BETTER_AUTH_SECRET:",
+  process.env.BETTER_AUTH_SECRET ? "✅ Set" : "❌ Not set"
+);
 
-console.log('🔄 Initializing Prisma Client...');
-console.log('Current directory:', process.cwd());
-console.log('.env file exists:', fs.existsSync('.env'));
-console.log('DATABASE_URL:', process.env.DATABASE_URL || 'NOT SET');
-console.log('BETTER_AUTH_SECRET:', process.env.BETTER_AUTH_SECRET ? '✅ Set' : '❌ Not set');
+// Connect to MongoDB
+const connectDB = async () => {
+  try {
+    if (!process.env.DATABASE_URL) {
+      throw new Error("DATABASE_URL is not set in .env");
+    }
 
-// Initialize Prisma - REMOVE THE ADAPTER PROPERTY
-const prisma = new PrismaClient({
-  log: process.env.NODE_ENV === 'development' ? ['query', 'info', 'warn', 'error'] : ['error'],
-});
+    await mongoose.connect(process.env.DATABASE_URL);
+    console.log("✅ MongoDB connected successfully");
+  } catch (error: any) {
+    console.error("❌ MongoDB connection error:", error.message);
+    process.exit(1);
+  }
+};
 
-console.log('✅ Prisma Client created');
+connectDB();
 
-// Simple connection test
-prisma.$connect()
-  .then(() => {
-    console.log('✅ Prisma connected to database');
-  })
-  .catch((error) => {
-    console.error('❌ Prisma connection error:', error.message);
-    console.log('💡 Make sure MongoDB is running. Open a new terminal and run: mongod');
-  });
+// MongoDB adapter for better-auth
+const mongooseAdapter = {
+  id: "mongoose-adapter",
+  
+  async create(data: { model: string; data: any }) {
+    const { model, data: record } = data;
+    
+    switch (model) {
+      case "user":
+        const user = new User(record);
+        return (await user.save()).toObject();
+      case "session":
+        const session = new Session(record);
+        return (await session.save()).toObject();
+      case "account":
+        const account = new Account(record);
+        return (await account.save()).toObject();
+      case "verification":
+        const verification = new Verification(record);
+        return (await verification.save()).toObject();
+      default:
+        throw new Error(`Unknown model: ${model}`);
+    }
+  },
+
+  async findOne(data: { model: string; where: any }) {
+    const { model, where } = data;
+    
+    switch (model) {
+      case "user":
+        return User.findOne(where);
+      case "session":
+        return Session.findOne(where).populate("userId");
+      case "account":
+        return Account.findOne(where);
+      case "verification":
+        return Verification.findOne(where);
+      default:
+        throw new Error(`Unknown model: ${model}`);
+    }
+  },
+
+  async findMany(data: { model: string; where?: any; limit?: number }) {
+    const { model, where = {}, limit } = data;
+    
+    switch (model) {
+      case "user":
+        const userQuery = User.find(where);
+        return limit ? userQuery.limit(limit) : userQuery;
+      case "session":
+        const sessionQuery = Session.find(where);
+        return limit ? sessionQuery.limit(limit) : sessionQuery;
+      case "account":
+        const accountQuery = Account.find(where);
+        return limit ? accountQuery.limit(limit) : accountQuery;
+      case "verification":
+        const verificationQuery = Verification.find(where);
+        return limit ? verificationQuery.limit(limit) : verificationQuery;
+      default:
+        throw new Error(`Unknown model: ${model}`);
+    }
+  },
+
+  async update(data: { model: string; where: any; update: any }) {
+    const { model, where, update } = data;
+    
+    switch (model) {
+      case "user":
+        return User.findOneAndUpdate(where, update, { new: true });
+      case "session":
+        return Session.findOneAndUpdate(where, update, { new: true });
+      case "account":
+        return Account.findOneAndUpdate(where, update, { new: true });
+      case "verification":
+        return Verification.findOneAndUpdate(where, update, { new: true });
+      default:
+        throw new Error(`Unknown model: ${model}`);
+    }
+  },
+
+  async delete(data: { model: string; where: any }) {
+    const { model, where } = data;
+    
+    switch (model) {
+      case "user":
+        return User.findOneAndDelete(where);
+      case "session":
+        return Session.findOneAndDelete(where);
+      case "account":
+        return Account.findOneAndDelete(where);
+      case "verification":
+        return Verification.findOneAndDelete(where);
+      default:
+        throw new Error(`Unknown model: ${model}`);
+    }
+  },
+};
 
 export const auth = betterAuth({
-  database: prismaAdapter(prisma, {
-    provider: "mongodb",
-  }),
-  
+  database: mongooseAdapter as any,
+
   secret: process.env.BETTER_AUTH_SECRET || "dev-secret-change-in-production",
-  trustedOrigins: [process.env.FRONTEND_URL || 'http://localhost:3000'],
-  siteUrl: process.env.BACKEND_URL || 'http://localhost:8080',
-  
+  trustedOrigins: [process.env.FRONTEND_URL || "http://localhost:3000"],
+  baseURL: process.env.BACKEND_URL || "http://localhost:8080",
+
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: false,
   },
-  
+
   socialProviders: {
     google: {
-      clientId: process.env.GOOGLE_CLIENT_ID || '',
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
-    }
-  },
-  
-  user: {
-    additionalFields: {
-      role: {
-        type: "string",
-        defaultValue: "GUEST",
-        required: true,
-      },
-      phone: {
-        type: "string",
-        required: false,
-      },
-      isActive: {
-        type: "boolean",
-        defaultValue: true,
-        required: true,
-      }
-    }
-  },
-  
-  email: {
-    from: process.env.EMAIL_FROM || 'noreply@sixpointvictoria.com',
-    server: {
-      host: "localhost",
-      port: 587,
-      auth: {
-        user: "",
-        pass: ""
-      }
+      clientId: process.env.GOOGLE_CLIENT_ID || "",
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
     },
-    sendResetPassword: async ({ user, url }: { user: any; url: string }) => {
-      console.log(`📧 Reset password URL for ${user.email}: ${url}`);
-      return { success: true };
-    },
-    sendVerification: async () => {
-      return { success: true };
-    }
-  }
+  },
 });
 
-console.log('✅ Better Auth configured successfully');
+console.log("✅ Better Auth configured successfully");
 
-export { prisma };
+export { mongoose };
+

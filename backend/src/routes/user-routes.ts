@@ -12,7 +12,7 @@ userRouter.use(requireAuth);
 userRouter.get('/profile', userController.getProfile);
 userRouter.put('/profile', userController.updateProfile);
 
-// Bookings
+// Bookings 
 userRouter.get('/bookings', userController.getBookings);
 userRouter.get('/bookings/:id', userController.getBooking);
 userRouter.patch('/bookings/:id/cancel', userController.cancelBooking);
